@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { getConfiguredProviders } from "../integrations/registry";
 import { logger } from "../logger";
+import { hasPassthroughTool } from "../passthrough/tools";
 import { authenticateRequest } from "./auth";
 import { getServerMetadata } from "./metadata";
 import { protocolCapabilities, registerProtocolLifecycleLogging } from "./protocol-logging";
@@ -180,7 +181,9 @@ export function serverInstructions(surface: SurfaceDefinition): string {
     getConfiguredProviders(surface).size > 0
       ? "If provider tools are present, call list_integrations before provider search or analysis."
       : "";
-  const writerHint = surface.enableWriter ? "Use write_content only after gathering facts with retrieval tools." : "";
+  const writerHint = hasPassthroughTool(surface, "write_content")
+    ? "Use write_content only after gathering facts with retrieval tools."
+    : "";
   return [
     `${surface.label} content namespace. Content is a static snapshot and may be stale until the owner runs sync and rebuilds.`,
     "When source names are unknown, call list_documents before get_document.",

@@ -96,7 +96,7 @@ test("tool names, descriptions, titles, and annotations are agent-oriented", () 
   assert.match(projects.list_integrations.description ?? "", /Call this before/);
 });
 
-test("writer tool is disabled by default and project-scoped when enabled", () => {
+test("writer tool is disabled by default and surface-scoped when enabled", () => {
   delete process.env.MCP_ENABLE_WRITER;
   assert.equal(captureTools("projects").includes("write_content"), false);
   process.env.MCP_ENABLE_WRITER = "true";

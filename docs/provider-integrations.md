@@ -103,13 +103,28 @@ TWELVELABS_RATE_LIMIT_MAX=30
 
 Set `MCP_PROVIDER_RATE_LIMIT_MAX=0` to disable the best-effort in-memory provider limit. On Vercel, these counters are per function instance, so they are a guardrail against accidental loops rather than a billing-grade quota system.
 
-## Writer Tool
+## Passthrough Tools
 
-Any surface with `enable_writer: true` in its root `_meta.yaml` can optionally expose `write_content`:
+Provider integrations are metadata-bound to a content source. Passthrough tools are different: they expose a direct proxy to an external capability that belongs to the server deployment rather than to one document source.
 
-```env
-MCP_ENABLE_WRITER=true
-AI_PROVIDER_API_KEY=<provider-secret>
+Surfaces opt into passthrough tools with root metadata:
+
+```yaml
+type: surface
+label: Project Memory
+passthrough_tools:
+  - write_content
 ```
 
-The template includes the tool contract and a provider boundary, but not a live paid-provider implementation. Downstream repos can connect this boundary to Vercel AI Gateway, OpenAI, Anthropic, Gemini, or another provider.
+The built-in `write_content` tool drafts, rewrites, condenses, or polishes final prose through Vercel AI Gateway and the AI SDK. It is still gated by env, so committing a surface declaration does not expose a paid provider by accident:
+
+```env
+MCP_ENABLE_WRITE_CONTENT=true
+AI_GATEWAY_API_KEY=<vercel-ai-gateway-key>
+MCP_WRITE_CONTENT_MODEL=google/gemini-3.1-pro-preview
+MCP_WRITER_CONTEXT="Write in a clear, practical, grounded style."
+```
+
+`MCP_ENABLE_WRITER=true` is retained as a legacy alias for `MCP_ENABLE_WRITE_CONTENT=true`. Prefer `MCP_ENABLE_WRITE_CONTENT` for new deployments.
+
+`write_content` is a convenience generation tool, not a retrieval tool. Agents should gather facts with `list_documents`, `get_document`, `search_documents`, resources, or provider integrations first, then pass source material into `context`.

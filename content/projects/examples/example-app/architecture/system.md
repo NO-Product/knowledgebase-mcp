@@ -9,4 +9,4 @@ Example App stores authored project memory as Markdown. Build-time search indexe
 
 ## Boundaries
 
-The project surface should expose project context only. Technology documentation should live in the technology surface.
+This surface should expose project context only. Separate reference documentation should live in a separate surface.

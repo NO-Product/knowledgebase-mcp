@@ -2,6 +2,7 @@ type: surface
 category: project
 label: Project Documentation
 document_model: collection-docs
-enable_writer: true
+passthrough_tools:
+  - write_content
 order: 20
 description: Example project memory content for the open MCP knowledgebase.

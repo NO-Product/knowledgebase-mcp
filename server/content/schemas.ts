@@ -109,6 +109,7 @@ export const MetaYamlSchema = z
     label: z.string().optional(),
     document_model: z.enum(["categorized-docs", "collection-docs"]).optional(),
     docs_dir: z.string().optional(),
+    passthrough_tools: z.array(z.enum(["write_content"])).optional(),
     enable_writer: z.boolean().optional(),
     order: z.number().optional(),
     domain: z.string().optional(),
