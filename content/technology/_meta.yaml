@@ -1,0 +1,20 @@
+type: surface
+category: technology
+label: Technology Documentation
+document_model: categorized-docs
+docs_dir: docs
+order: 10
+groups:
+  - id: sdks
+    label: SDKs
+    aliases: [sdk]
+  - id: platforms
+    label: Platforms
+    aliases: [platform]
+  - id: tooling
+    label: Tooling
+    aliases: [tool]
+  - id: devices
+    label: Devices
+    aliases: [device]
+description: Example technology documentation content for the open MCP knowledgebase.

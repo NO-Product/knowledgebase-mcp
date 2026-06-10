@@ -1,0 +1,48 @@
+# Dependencies installed by the package manager.
+node_modules/
+
+# Next.js, Vercel, and generated TypeScript output.
+# `next-env.d.ts` is recreated by Next.js; this repo uses tracked `env.d.ts`
+# so dev/build cycles do not rewrite a committed file.
+.next/
+next-env.d.ts
+.vercel/
+out/
+
+# Search indices generated from committed Markdown content.
+# Run `pnpm build` or `pnpm exec tsx scripts/build-indices.ts` to recreate them.
+lib/generated/
+
+# TypeScript incremental cache.
+*.tsbuildinfo
+
+# Local secrets and machine-specific environment files.
+# Commit `.env.example` instead when adding a documented variable.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build, coverage, and tool caches.
+dist/
+build/
+coverage/
+.turbo/
+.cache/
+
+# Local logs from package managers or one-off debugging.
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS metadata.
+.DS_Store
+Thumbs.db
+
+# Local agent/tooling state. These folders may contain prompts, transcripts,
+# experiments, or private worktree state and should not ship in the template.
+.claude/
+.worktrees/
+.artifacts/

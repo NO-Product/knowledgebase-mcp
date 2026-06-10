@@ -1,0 +1,24 @@
+type: document
+category: project
+domain: example-app
+name: Example App
+summary: Fixture project used to demonstrate project memory retrieval and provider integration guards.
+status: active
+years: "2026"
+tags:
+  - synthetic-fixture
+integrations:
+  mixedbread:
+    name: example-app-documents
+    label: Example App document store
+    purpose: Demonstrates metadata-bound semantic search configuration without requiring a provider key.
+    api_key_env: MIXEDBREAD_API_KEY
+    enabled_tools:
+      - mixedbread_search
+      - mixedbread_agentic_search
+      - mixedbread_answer
+    store_identifiers:
+      - example-app-documents
+    default_search_options:
+      rerank: true
+      return_metadata: true

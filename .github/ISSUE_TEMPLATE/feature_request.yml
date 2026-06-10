@@ -1,0 +1,33 @@
+name: Feature Request
+description: Suggest an improvement or extension point.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user or maintainer problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the desired behavior and any MCP/provider/deployment implications.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - MCP protocol
+        - Content model
+        - Sync
+        - Provider integration
+        - Deployment
+        - Documentation
+        - Other
+    validations:
+      required: true

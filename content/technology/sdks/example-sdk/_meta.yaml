@@ -1,0 +1,11 @@
+type: document
+category: technology
+domain: sdk
+description: Small fixture SDK used to demonstrate content authoring and search.
+tags:
+  - synthetic-fixture
+sync:
+  pattern: url-fetch
+  upstream: fixture
+  command: pnpm sync:free
+  license: Synthetic fixture content.

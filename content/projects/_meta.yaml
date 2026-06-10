@@ -1,0 +1,7 @@
+type: surface
+category: project
+label: Project Documentation
+document_model: collection-docs
+enable_writer: true
+order: 20
+description: Example project memory content for the open MCP knowledgebase.

@@ -1,0 +1,6 @@
+type: document
+category: technology
+domain: platform
+description: Small fixture platform used to demonstrate deployment documentation.
+tags:
+  - synthetic-fixture

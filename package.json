@@ -1,0 +1,50 @@
+{
+  "name": "knowledgebase-mcp",
+  "version": "1.0.0",
+  "private": false,
+  "description": "A zero-database MCP knowledgebase template for Vercel.",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "prebuild": "tsx scripts/build-indices.ts",
+    "build": "next build",
+    "start": "next start",
+    "test": "tsx --test tests/*.test.ts",
+    "pretypecheck": "next typegen",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "validate": "tsx scripts/validate-content.ts",
+    "stdio": "tsx stdio.ts",
+    "inspect:stdio": "npx -y @modelcontextprotocol/inspector pnpm stdio -- --surface technology",
+    "sync": "node scripts/sync-all.mjs",
+    "sync:free": "node scripts/sync-all.mjs --free",
+    "sync:list": "node scripts/sync-all.mjs --list"
+  },
+  "packageManager": "pnpm@10.28.2",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.1",
+    "minisearch": "^7.2.0",
+    "next": "^16.2.6",
+    "pino": "^10.3.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowAny": [
+        "@modelcontextprotocol/sdk"
+      ]
+    }
+  }
+}
