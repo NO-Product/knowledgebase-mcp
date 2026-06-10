@@ -6,6 +6,7 @@ import type { ContentMetadata, ContentSource } from "./content-source";
 import { buildContentUri, safeContentKey } from "./uri";
 
 type MetadataRecord = Record<string, unknown>;
+const AUTHORING_GUIDANCE_FILENAMES = new Set(["AGENTS.md", "CLAUDE.md", "ONTOLOGY.md"]);
 
 export class FileSystemContentSource implements ContentSource {
   id = "filesystem";
@@ -46,7 +47,7 @@ export class FileSystemContentSource implements ContentSource {
     const map = new Map<string, ContentMetadata>();
     for (const filePath of this.walk(this.rootDir)) {
       if (!/\.(md|mdx|ya?ml)$/i.test(filePath)) continue;
-      if (path.basename(filePath) === "CLAUDE.md" || path.basename(filePath) === "AGENTS.md") continue;
+      if (AUTHORING_GUIDANCE_FILENAMES.has(path.basename(filePath))) continue;
 
       const relativePath = path.relative(this.rootDir, filePath).replaceAll(path.sep, "/");
       const key = relativePath.replace(/\.(md|mdx|ya?ml)$/i, "");
