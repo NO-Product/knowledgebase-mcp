@@ -18,6 +18,8 @@ MCP_REQUIRE_AUTH=true
 MCP_ALLOW_QUERY_API_KEY=false
 ```
 
+Set `MCP_ALLOW_QUERY_API_KEY=true` only when a known client cannot send custom auth headers. Claude.ai custom connectors without OAuth are one such case because the connector UI accepts the remote MCP URL and OAuth settings, not an arbitrary static Bearer header.
+
 Recommended:
 
 ```env
@@ -75,13 +77,19 @@ Use a Bearer token when possible:
 Authorization: Bearer <MCP_API_KEY>
 ```
 
-Some MCP clients cannot send custom headers. For those clients only, set:
+Some MCP clients cannot send custom headers. Claude.ai custom connectors without OAuth fall into this category. For those clients only, set:
 
 ```env
 MCP_ALLOW_QUERY_API_KEY=true
 ```
 
-Then connect with `?api_key=<MCP_API_KEY>`. Do not use query-string tokens for OAuth-style access tokens, and prefer Bearer headers whenever the client supports them.
+Then connect with:
+
+```text
+https://your-project.vercel.app/api/mcp/<surface>?api_key=<MCP_API_KEY>
+```
+
+Do not use query-string tokens for OAuth-style access tokens, and prefer Bearer headers whenever the client supports them.
 
 ## Runtime Notes
 

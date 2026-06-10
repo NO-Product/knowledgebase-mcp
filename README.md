@@ -39,6 +39,8 @@ Use `Authorization: Bearer <MCP_API_KEY>` where the client supports headers.
 
 Clients without header support can use `?api_key=<MCP_API_KEY>` only when `MCP_ALLOW_QUERY_API_KEY=true`. Keep that fallback disabled for production unless you explicitly need it for a known connector.
 
+Claude.ai custom connectors without OAuth are one known case: add the connector with `/api/mcp/<surface>?api_key=<MCP_API_KEY>` after enabling `MCP_ALLOW_QUERY_API_KEY=true`. See [MCP client examples](docs/mcp-client-examples.md).
+
 ## MCP Metadata
 
 The server returns MCP implementation metadata during initialization:

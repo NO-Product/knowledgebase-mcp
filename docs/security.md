@@ -14,6 +14,14 @@ This is intentionally not OAuth. Query-string API keys are disabled by default a
 MCP_ALLOW_QUERY_API_KEY=true
 ```
 
+Claude.ai custom connectors without OAuth are a common reason to enable this fallback: the connector setup accepts a remote MCP URL and OAuth settings, not an arbitrary static Bearer header. In that case, connect with:
+
+```text
+https://your-project.vercel.app/api/mcp/<surface>?api_key=<MCP_API_KEY>
+```
+
+Treat URLs containing API keys as secrets. Do not paste them into tickets, public docs, logs, analytics tools, screenshots, or shared chat transcripts.
+
 Do not use query-string tokens for OAuth-style access tokens.
 
 ## Future OAuth Requirements
