@@ -426,7 +426,7 @@ It is based on the synced Model Context Protocol documentation now available in 
 - [x] Auth docs no longer normalize query-string tokens as the main path.
 - [x] README and Vercel docs are accurate for a non-technical deployer.
 - [x] Public example content contains no private project data or real secrets.
-- [x] A downstream private fork can enable only `technology` or only `projects` without code changes.
+- [x] A downstream fork can enable one surface, several surfaces, or every discovered surface without code changes.
 
 ## Known Tradeoffs
 

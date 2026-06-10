@@ -45,7 +45,8 @@ Fields:
 - `docs_dir`: optional nested directory for topic pages, commonly `docs`.
 - `order`: lower numbers are used first when `/api/mcp` or `pnpm stdio` needs a default surface.
 - `groups`: optional named child folders for categorized surfaces; groups can include aliases.
-- `enable_writer`: opt-in flag that allows `write_content` to register when `MCP_ENABLE_WRITER=true`.
+- `passthrough_tools`: optional list of built-in proxy/passthrough tools this surface may expose, such as `write_content`.
+- `enable_writer`: legacy compatibility alias for `passthrough_tools: [write_content]`; prefer `passthrough_tools` for new surfaces.
 
 ## Document Models
 

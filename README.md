@@ -9,6 +9,7 @@ Use it to expose static Markdown content to AI agents through clean MCP surfaces
 - Skill catalogs with `when_to_use` guidance.
 - Build-time MiniSearch retrieval.
 - Optional provider-backed integrations behind content metadata.
+- Optional passthrough tools, such as `write_content`, for deployment-level capabilities that proxy a configured external service.
 
 The default deployment needs no database and no paid provider. Content is committed as Markdown, indexed at build time, and bundled with the Next.js MCP routes.
 
@@ -92,6 +93,8 @@ The stdio entrypoint keeps stdout protocol-clean. Runtime diagnostics go to stde
 
 Set `MCP_API_KEY` during setup and connect clients to `/api/mcp/<surface>`.
 
+Passthrough tools are disabled unless both the surface declares the tool and the deployment enables it. For example, a surface with `passthrough_tools: [write_content]` exposes the writer only when `MCP_ENABLE_WRITE_CONTENT=true` and `AI_GATEWAY_API_KEY` is configured.
+
 ## Security
 
 Production deployments should use `Authorization: Bearer <MCP_API_KEY>`. Query-string API keys are an opt-in compatibility fallback only. This template does not implement OAuth; see [Security](docs/security.md) before claiming OAuth compliance in a downstream deployment.
@@ -113,6 +116,7 @@ Operational endpoints:
 - [MCP Inspector validation](docs/inspector-validation.md)
 - [MCP client examples](docs/mcp-client-examples.md)
 - [Provider integrations](docs/provider-integrations.md)
+- [Passthrough tools](docs/passthrough-tools.md)
 - [Provider/platform validation notes](docs/provider-platform-validation.md)
 - [Observability and logging](docs/observability-logging.md)
 - [Sync sources](docs/sync-sources.md)

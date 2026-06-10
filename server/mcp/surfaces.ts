@@ -5,13 +5,13 @@ import yaml from "js-yaml";
 import { z } from "zod";
 import { contentDir } from "../content/paths";
 import { registerIntegrationTools } from "../integrations/tools";
+import { type PassthroughToolId, PassthroughToolIdSchema, registerPassthroughTools } from "../passthrough/tools";
 import { registerResources } from "../resources/content-resources";
 import { registerGetDocument } from "../tools/documents/get-document";
 import { registerListDocuments } from "../tools/documents/list-documents";
 import { registerSearchDocuments } from "../tools/documents/search-documents";
 import { registerGetSkill } from "../tools/skills/get-skill";
 import { registerListSkills } from "../tools/skills/list-skills";
-import { isWriterEnabled, registerWriteContent } from "../tools/write-content";
 
 export type SurfaceId = string;
 export type ContentCategory = string;
@@ -32,7 +32,7 @@ export type SurfaceDefinition = {
   documentModel: DocumentModel;
   docsDirName?: string;
   groups: SurfaceGroup[];
-  enableWriter: boolean;
+  passthroughTools: PassthroughToolId[];
   defaultRoute: string;
 };
 
@@ -60,6 +60,7 @@ const SurfaceMetaSchema = z
     summary: z.string().optional(),
     document_model: z.enum(["categorized-docs", "collection-docs"]).optional(),
     docs_dir: z.string().regex(SLUG_PATTERN).optional(),
+    passthrough_tools: z.array(PassthroughToolIdSchema).optional(),
     enable_writer: z.boolean().optional(),
     order: z.number().optional(),
     groups: z.array(GroupSchema).optional(),
@@ -102,6 +103,12 @@ function normalizeGroups(metaGroups: z.infer<typeof GroupSchema>[] | undefined, 
   );
 }
 
+function normalizePassthroughTools(meta: z.infer<typeof SurfaceMetaSchema>): PassthroughToolId[] {
+  const tools = new Set<PassthroughToolId>(meta.passthrough_tools ?? []);
+  if (meta.enable_writer) tools.add("write_content");
+  return [...tools].sort();
+}
+
 function discoverSurfaces(): Record<string, SurfaceDefinition> {
   const root = contentDir();
   if (!fs.existsSync(root)) return {};
@@ -124,7 +131,7 @@ function discoverSurfaces(): Record<string, SurfaceDefinition> {
         documentModel: meta.document_model ?? "collection-docs",
         docsDirName: meta.docs_dir,
         groups: normalizeGroups(meta.groups, surfaceDir),
-        enableWriter: meta.enable_writer ?? false,
+        passthroughTools: normalizePassthroughTools(meta),
         defaultRoute: `/api/mcp/${entry.name}`,
       },
     });
@@ -179,6 +186,6 @@ export function registerSurfaceTools(server: McpServer, surface: SurfaceDefiniti
   registerSearchDocuments(server, surface);
   registerListSkills(server, surface);
   registerGetSkill(server, surface);
-  if (surface.enableWriter && isWriterEnabled()) registerWriteContent(server);
+  registerPassthroughTools(server, surface);
   registerIntegrationTools(server, surface);
 }

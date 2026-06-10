@@ -22,6 +22,12 @@ For provider tools:
 2. Use provider search, answer, or analyze tools only when the scope reports the provider as configured and the required tool is enabled.
 3. Pass the content scope, not raw provider store ids or index ids.
 
+For passthrough tools:
+
+1. Use them only after the surface has exposed the tool.
+2. Treat them as live calls to a deployment-level service, not as static retrieval.
+3. Pass only the context needed for the task; do not send unrelated secrets or full transcripts by default.
+
 ## Document Tools
 
 ### `list_documents`
@@ -74,7 +80,7 @@ Fetches one skill by id. Inline skills return their instructions. Install-delive
 
 ## Provider Tools
 
-Provider tools are optional extension points. The base template validates scope, credentials, enabled tools, timeouts, and rate limits, then returns `adapter_not_implemented` until a downstream live adapter is installed.
+Provider tools are optional source-bound extension points. The template validates scope, credentials, enabled tools, timeouts, and rate limits, then calls the configured adapter.
 
 Provider result limits are intentionally conservative: search-style tools cap `top_k` or `limit` at 50, and answer-style tools cap `top_k` at 20.
 
@@ -91,6 +97,28 @@ Provider errors use structured JSON in an `isError: true` tool result:
   }
 }
 ```
+
+## Passthrough Tools
+
+Passthrough tools are optional deployment-level extension points declared by a surface and enabled by env. They are not tied to one content source.
+
+### `write_content`
+
+Uses Vercel AI Gateway through the AI SDK to draft, rewrite, condense, or polish final prose. It is enabled when:
+
+- the surface root `_meta.yaml` includes `passthrough_tools: [write_content]`;
+- `MCP_ENABLE_WRITE_CONTENT=true` or the legacy alias `MCP_ENABLE_WRITER=true`;
+- `AI_GATEWAY_API_KEY` is configured.
+
+Inputs:
+
+- `task`: required writing objective.
+- `context`: optional source material gathered through retrieval tools.
+- `syntax`: `markdown` or `plaintext`.
+- `max_chars`: optional output character limit.
+- `writing_samples`: optional examples to tune the voice.
+
+The response is JSON with `status` and `text`.
 
 ## Resources
 
