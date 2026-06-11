@@ -51,6 +51,11 @@ const ProviderIdentifierSchema = z
   .refine((value) => value !== "*", "provider identifiers cannot be wildcards")
   .refine((value) => !/\s/.test(value), "provider identifiers cannot contain whitespace");
 
+const MixedbreadStoreIdentifierSchema = ProviderIdentifierSchema.refine(
+  (value) => value !== "mixedbread/web",
+  "scoped Mixedbread integrations cannot use the global mixedbread/web store",
+);
+
 const TwelveLabsTools = new Set<IntegrationTool>(["twelvelabs_search", "twelvelabs_analyze"]);
 const MixedbreadTools = new Set<IntegrationTool>([
   "mixedbread_search",
@@ -93,7 +98,7 @@ export const MixedbreadAgenticOptionsSchema = z
 export type MixedbreadAgenticOptions = z.infer<typeof MixedbreadAgenticOptionsSchema>;
 
 export const MixedbreadIntegrationSchema = BaseIntegrationSchema.extend({
-  store_identifiers: z.array(ProviderIdentifierSchema).min(1),
+  store_identifiers: z.array(MixedbreadStoreIdentifierSchema).min(1),
   default_search_options: MixedbreadSearchOptionsSchema.optional(),
   ingest_content_docs: z.boolean().optional(),
 }).superRefine((value, ctx) => {

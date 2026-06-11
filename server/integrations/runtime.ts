@@ -1,4 +1,5 @@
 import type { IntegrationTool } from "../content/schemas";
+import { ProviderRequestTimeoutError } from "../providers/errors";
 import type { ProviderErrorContext } from "./errors";
 import { type ProviderPublicInfo, ProviderToolError } from "./errors";
 import type {
@@ -166,6 +167,15 @@ export async function runProviderOperation<T>(
 
   try {
     return await Promise.race([operation(controller.signal), timeout]);
+  } catch (error) {
+    if (error instanceof ProviderRequestTimeoutError) {
+      throw new ProviderToolError("timeout", `${context.provider} provider tool timed out.`, {
+        ...context,
+        cause: error,
+        safeDetails: { timeout_ms: error.timeoutMs, operation: error.operation },
+      });
+    }
+    throw error;
   } finally {
     if (timer) clearTimeout(timer);
   }
