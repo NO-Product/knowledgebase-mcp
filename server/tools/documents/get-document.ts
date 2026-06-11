@@ -37,7 +37,7 @@ function findCollectionSource(surface: SurfaceDefinition, source: string): strin
 }
 
 function toc(basePath: string, docsDirName?: string): string {
-  const baseDir = contentPath(...basePath.split("/").slice(1));
+  const baseDir = contentPath(...basePath.split("/"));
   const root = docsDirName ? path.join(baseDir, docsDirName) : baseDir;
   if (!fs.existsSync(root)) return "";
   const lines: string[] = [];
