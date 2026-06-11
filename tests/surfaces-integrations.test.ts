@@ -8,6 +8,7 @@ import { providerTimeoutMs, resetProviderRateLimitState, runProviderOperation } 
 import { registerIntegrationTools } from "../server/integrations/tools";
 import { formatToolError, scopeSchema } from "../server/integrations/tools/schemas";
 import { registerSurfaceTools, SURFACES } from "../server/mcp/surfaces";
+import { ProviderRequestTimeoutError } from "../server/providers/errors";
 
 type ToolCallback = (args: Record<string, unknown>) => Promise<{ isError?: boolean; content: Array<{ text: string }> }>;
 type ToolConfig = {
@@ -136,6 +137,18 @@ test("integration schemas reject cross-provider tools and raw provider ids in sc
     }).success,
     false,
   );
+  assert.equal(
+    IntegrationsSchema.safeParse({
+      mixedbread: {
+        label: "bad",
+        purpose: "bad",
+        api_key_env: "MIXEDBREAD_API_KEY",
+        enabled_tools: ["mixedbread_search"],
+        store_identifiers: ["mixedbread/web"],
+      },
+    }).success,
+    false,
+  );
 });
 
 test("provider errors redact common secret patterns", () => {
@@ -241,6 +254,30 @@ test("provider runtime normalizes timeout failures through ProviderToolError", a
         () => new Promise(() => undefined),
       ),
     (error) => error instanceof ProviderToolError && error.code === "timeout",
+  );
+});
+
+test("provider runtime normalizes provider-client timeout failures", async () => {
+  await assert.rejects(
+    () =>
+      runProviderOperation(
+        {
+          provider: "mixedbread",
+          tool: "mixedbread_search",
+          scope: { category: "examples", slug: "example-app" },
+          integration: {
+            label: "Example App document store",
+            purpose: "Semantic search over uploaded project artifacts.",
+          },
+          inputSummary: { query_chars: 5 },
+          timeoutMs: 1000,
+        },
+        () => Promise.reject(new ProviderRequestTimeoutError("mixedbread", "stores.search", 1000)),
+      ),
+    (error) =>
+      error instanceof ProviderToolError &&
+      error.code === "timeout" &&
+      error.safeDetails?.operation === "stores.search",
   );
 });
 
