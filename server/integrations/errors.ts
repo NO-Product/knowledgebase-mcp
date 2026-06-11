@@ -8,7 +8,6 @@ export type ProviderToolErrorCode =
   | "not_configured"
   | "missing_credentials"
   | "tool_not_enabled"
-  | "adapter_not_implemented"
   | "timeout"
   | "rate_limited"
   | "provider_error";

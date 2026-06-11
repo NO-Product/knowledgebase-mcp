@@ -10,7 +10,7 @@ import type {
 
 const DEFAULT_PROVIDER_TIMEOUT_MS = 30_000;
 const MIN_PROVIDER_TIMEOUT_MS = 1_000;
-const MAX_PROVIDER_TIMEOUT_MS = 120_000;
+const MAX_PROVIDER_TIMEOUT_MS = 300_000;
 const DEFAULT_RATE_LIMIT_MAX = 30;
 const DEFAULT_RATE_LIMIT_WINDOW_MS = 60_000;
 
@@ -22,6 +22,18 @@ type RateLimitBucket = {
 const rateLimitBuckets = new Map<string, RateLimitBucket>();
 
 type ResolvedProviderIntegration = ResolvedMixedbreadIntegration | ResolvedTwelveLabsIntegration;
+
+const TOOL_TIMEOUT_DEFAULTS: Partial<Record<IntegrationTool, { env: string; defaultMs: number; maxMs: number }>> = {
+  mixedbread_search: { env: "MIXEDBREAD_SEARCH_TIMEOUT_MS", defaultMs: 120_000, maxMs: 240_000 },
+  mixedbread_agentic_search: {
+    env: "MIXEDBREAD_AGENTIC_SEARCH_TIMEOUT_MS",
+    defaultMs: 240_000,
+    maxMs: 270_000,
+  },
+  mixedbread_answer: { env: "MIXEDBREAD_ANSWER_TIMEOUT_MS", defaultMs: 240_000, maxMs: 270_000 },
+  twelvelabs_search: { env: "TWELVELABS_SEARCH_TIMEOUT_MS", defaultMs: 60_000, maxMs: 120_000 },
+  twelvelabs_analyze: { env: "TWELVELABS_ANALYZE_TIMEOUT_MS", defaultMs: 120_000, maxMs: 240_000 },
+};
 
 export type ProviderCallContext = Required<
   Pick<ProviderErrorContext, "provider" | "tool" | "scope" | "integration" | "timeoutMs">
@@ -41,19 +53,19 @@ function providerEnvPrefix(provider: IntegrationProvider): "MIXEDBREAD" | "TWELV
   return provider === "mixedbread" ? "MIXEDBREAD" : "TWELVELABS";
 }
 
-export function providerTimeoutMs(provider: IntegrationProvider): number {
-  const fallback = envInteger(
-    "MCP_PROVIDER_TIMEOUT_MS",
-    DEFAULT_PROVIDER_TIMEOUT_MS,
-    MIN_PROVIDER_TIMEOUT_MS,
-    MAX_PROVIDER_TIMEOUT_MS,
-  );
-  return envInteger(
+export function providerTimeoutMs(provider: IntegrationProvider, tool?: IntegrationTool): number {
+  const toolDefaults = tool ? TOOL_TIMEOUT_DEFAULTS[tool] : undefined;
+  const defaultTimeoutMs = toolDefaults?.defaultMs ?? DEFAULT_PROVIDER_TIMEOUT_MS;
+  const maxTimeoutMs = toolDefaults?.maxMs ?? MAX_PROVIDER_TIMEOUT_MS;
+  const fallback = envInteger("MCP_PROVIDER_TIMEOUT_MS", defaultTimeoutMs, MIN_PROVIDER_TIMEOUT_MS, maxTimeoutMs);
+  const providerScoped = envInteger(
     `${providerEnvPrefix(provider)}_TIMEOUT_MS`,
     fallback,
     MIN_PROVIDER_TIMEOUT_MS,
-    MAX_PROVIDER_TIMEOUT_MS,
+    maxTimeoutMs,
   );
+  if (!toolDefaults) return providerScoped;
+  return envInteger(toolDefaults.env, providerScoped, MIN_PROVIDER_TIMEOUT_MS, maxTimeoutMs);
 }
 
 function rateLimitOptions(provider: IntegrationProvider) {
@@ -101,7 +113,7 @@ export function createProviderCallContext(
     scope: resolved.scope,
     integration: publicIntegrationInfo(resolved),
     inputSummary,
-    timeoutMs: providerTimeoutMs(resolved.provider),
+    timeoutMs: providerTimeoutMs(resolved.provider, tool),
   };
 }
 

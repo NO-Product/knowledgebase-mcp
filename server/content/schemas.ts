@@ -81,6 +81,17 @@ export const MixedbreadSearchOptionsSchema = z
   .strict();
 export type MixedbreadSearchOptions = z.infer<typeof MixedbreadSearchOptionsSchema>;
 
+export const MixedbreadAgenticOptionsSchema = z
+  .object({
+    max_rounds: z.number().int().min(1).max(10).optional(),
+    queries_per_round: z.number().int().min(1).max(10).optional(),
+    instructions: z.string().max(2000).optional(),
+    strict_top_k: z.boolean().optional(),
+    media_content: z.enum(["auto", "never", "always"]).optional(),
+  })
+  .strict();
+export type MixedbreadAgenticOptions = z.infer<typeof MixedbreadAgenticOptionsSchema>;
+
 export const MixedbreadIntegrationSchema = BaseIntegrationSchema.extend({
   store_identifiers: z.array(ProviderIdentifierSchema).min(1),
   default_search_options: MixedbreadSearchOptionsSchema.optional(),
