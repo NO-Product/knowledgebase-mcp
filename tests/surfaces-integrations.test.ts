@@ -4,7 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { IntegrationsSchema } from "../server/content/schemas";
 import { ProviderToolError } from "../server/integrations/errors";
 import { getConfiguredProviders, listIntegrations } from "../server/integrations/registry";
-import { resetProviderRateLimitState, runProviderOperation } from "../server/integrations/runtime";
+import { providerTimeoutMs, resetProviderRateLimitState, runProviderOperation } from "../server/integrations/runtime";
 import { registerIntegrationTools } from "../server/integrations/tools";
 import { formatToolError, scopeSchema } from "../server/integrations/tools/schemas";
 import { registerSurfaceTools, SURFACES } from "../server/mcp/surfaces";
@@ -106,7 +106,7 @@ test("writer tool is disabled by default and surface-scoped when enabled", () =>
 
 test("configured providers are discovered from metadata per surface", () => {
   assert.deepEqual(getConfiguredProviders(SURFACES.technology), new Set());
-  assert.deepEqual(getConfiguredProviders(SURFACES.projects), new Set(["mixedbread"]));
+  assert.deepEqual(getConfiguredProviders(SURFACES.projects), new Set(["mixedbread", "twelvelabs"]));
 });
 
 test("list_integrations reports missing env vars without exposing secret values", () => {
@@ -149,28 +149,20 @@ test("provider errors redact common secret patterns", () => {
   assert.equal(message.code, "provider_error");
 });
 
-test("provider tool failures are structured and do not expose raw provider ids", async () => {
-  process.env.MIXEDBREAD_API_KEY = "mxb_live_123456789";
-  const callback = captureIntegrationToolCallbacks("projects").mixedbread_search;
-  assert.ok(callback);
+test("provider tools advertise live adapters and scoped input schemas", () => {
+  const projects = captureToolConfigs("projects");
 
-  const result = await callback({
-    scope: { category: "examples", slug: "example-app" },
-    query: "find documents",
-    top_k: 5,
-  });
-  const payload = JSON.parse(result.content[0]?.text ?? "{}");
-  const serialized = JSON.stringify(payload);
-
-  assert.equal(result.isError, true);
-  assert.equal(payload.code, "adapter_not_implemented");
-  assert.equal(payload.provider, "mixedbread");
-  assert.equal(payload.tool, "mixedbread_search");
-  assert.equal(payload.integration.label, "Example App document store");
-  assert.equal(payload.input_summary.query_chars, 14);
-  assert.equal(payload.input_summary.top_k, 5);
-  assert.doesNotMatch(serialized, /example-app-documents/);
-  assert.doesNotMatch(serialized, /mxb_live_123456789/);
+  assert.doesNotMatch(projects.mixedbread_search.description ?? "", /not implemented/i);
+  assert.doesNotMatch(projects.twelvelabs_search?.description ?? "", /not implemented/i);
+  assert.ok(projects.mixedbread_search.inputSchema?.search_options);
+  assert.equal(projects.mixedbread_search.inputSchema?.file_ids, undefined);
+  assert.ok(projects.mixedbread_agentic_search.inputSchema?.max_rounds);
+  assert.ok(projects.mixedbread_agentic_search.inputSchema?.media_content);
+  assert.equal(projects.mixedbread_agentic_search.inputSchema?.file_ids, undefined);
+  assert.ok(projects.mixedbread_answer.inputSchema?.instructions);
+  assert.equal(projects.mixedbread_answer.inputSchema?.file_ids, undefined);
+  assert.ok(projects.twelvelabs_search?.inputSchema?.search_options);
+  assert.ok(projects.twelvelabs_analyze?.inputSchema?.model_name);
 });
 
 test("provider missing credentials remain server-side and report only the env var name", async () => {
@@ -208,27 +200,27 @@ test("provider tools cannot resolve scopes that are not declared in content meta
 });
 
 test("provider tools have best-effort per-scope rate limits", async () => {
-  process.env.MIXEDBREAD_API_KEY = "mxb_live_123456789";
   process.env.MCP_PROVIDER_RATE_LIMIT_MAX = "1";
   process.env.MCP_PROVIDER_RATE_LIMIT_WINDOW_MS = "60000";
   resetProviderRateLimitState();
-  const callback = captureIntegrationToolCallbacks("projects").mixedbread_search;
-  assert.ok(callback);
 
-  await callback({
+  const context = {
+    provider: "mixedbread" as const,
+    tool: "mixedbread_search" as const,
     scope: { category: "examples", slug: "example-app" },
-    query: "first",
-  });
-  const second = await callback({
-    scope: { category: "examples", slug: "example-app" },
-    query: "second",
-  });
-  const payload = JSON.parse(second.content[0]?.text ?? "{}");
+    integration: {
+      label: "Example App document store",
+      purpose: "Semantic search over uploaded project artifacts.",
+    },
+    inputSummary: { query_chars: 5 },
+    timeoutMs: 1000,
+  };
 
-  assert.equal(second.isError, true);
-  assert.equal(payload.code, "rate_limited");
-  assert.equal(payload.details.limit, 1);
-  assert.ok(payload.retry_after_ms > 0);
+  await runProviderOperation(context, async () => ({ ok: true }));
+  await assert.rejects(
+    () => runProviderOperation(context, async () => ({ ok: true })),
+    (error) => error instanceof ProviderToolError && error.code === "rate_limited",
+  );
 });
 
 test("provider runtime normalizes timeout failures through ProviderToolError", async () => {
@@ -250,4 +242,27 @@ test("provider runtime normalizes timeout failures through ProviderToolError", a
       ),
     (error) => error instanceof ProviderToolError && error.code === "timeout",
   );
+});
+
+test("provider runtime uses tool-specific live adapter timeouts", () => {
+  const keys = [
+    "MCP_PROVIDER_TIMEOUT_MS",
+    "MIXEDBREAD_TIMEOUT_MS",
+    "MIXEDBREAD_AGENTIC_SEARCH_TIMEOUT_MS",
+    "MIXEDBREAD_ANSWER_TIMEOUT_MS",
+    "TWELVELABS_TIMEOUT_MS",
+    "TWELVELABS_ANALYZE_TIMEOUT_MS",
+  ];
+  const original = new Map(keys.map((key) => [key, process.env[key]]));
+  try {
+    for (const key of keys) delete process.env[key];
+    assert.equal(providerTimeoutMs("mixedbread", "mixedbread_agentic_search"), 240_000);
+    assert.equal(providerTimeoutMs("mixedbread", "mixedbread_answer"), 240_000);
+    assert.equal(providerTimeoutMs("twelvelabs", "twelvelabs_analyze"), 120_000);
+  } finally {
+    for (const [key, value] of original) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 });

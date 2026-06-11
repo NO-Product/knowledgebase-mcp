@@ -1,5 +1,4 @@
 import type { IntegrationTool } from "../content/schemas";
-import { ProviderToolError } from "./errors";
 import { createProviderCallContext, type ProviderCallContext, runProviderOperation } from "./runtime";
 import type {
   IntegrationProvider,
@@ -44,19 +43,4 @@ export async function executeProviderAdapter<ResolvedIntegration extends Resolve
 ): Promise<ProviderAdapterResult<Data>> {
   const context = createProviderCallContext(resolved, adapter.tool, inputSummary);
   return runProviderOperation(context, (signal) => adapter.run(resolved, input, { ...context, signal }));
-}
-
-export async function runUnavailableProviderTool(
-  resolved: ResolvedProviderIntegration,
-  tool: IntegrationTool,
-  inputSummary: Record<string, unknown>,
-  message: string,
-): Promise<never> {
-  const context = createProviderCallContext(resolved, tool, inputSummary);
-  return runProviderOperation(context, async () => {
-    throw new ProviderToolError("adapter_not_implemented", message, {
-      ...context,
-      safeDetails: { extension_point: "ProviderAdapter.run" },
-    });
-  });
 }

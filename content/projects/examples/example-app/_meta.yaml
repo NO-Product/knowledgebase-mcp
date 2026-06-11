@@ -8,6 +8,18 @@ years: "2026"
 tags:
   - synthetic-fixture
 integrations:
+  twelvelabs:
+    name: example-app-media
+    label: Example App media index
+    purpose: Demonstrates metadata-bound video search and analysis configuration without requiring a provider key.
+    api_key_env: TWELVELABS_API_KEY
+    enabled_tools:
+      - twelvelabs_search
+      - twelvelabs_analyze
+    index_id: example-app-media-index
+    default_search_options:
+      - visual
+      - audio
   mixedbread:
     name: example-app-documents
     label: Example App document store

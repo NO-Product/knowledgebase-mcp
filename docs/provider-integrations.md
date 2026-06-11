@@ -24,36 +24,29 @@ Security rules:
 - Provider tools are advertised only when metadata declares a provider.
 - Provider tools resolve metadata server-side and never accept store ids or index ids from MCP callers.
 
-The included provider tools are adapter boundaries. Add concrete provider clients in downstream projects when you need live provider calls. The zero-database default works without any provider account.
+The included provider tools use live provider SDK clients when both scoped metadata and the corresponding API-key environment variable are present. The zero-database default still works without any provider account because tools are advertised only for content scopes that declare integrations, and calls fail closed when credentials are missing.
 
-## Adapter Boundary
+## Provider Boundary
 
-Provider adapters live behind `server/integrations/adapters.ts`.
+Provider calls live behind scoped integration resolution and provider clients in `server/providers/`.
 
-Adapters must return normalized MCP-safe results:
+Provider tools return normalized MCP-safe results:
 
 ```ts
-import type { ProviderAdapter } from "../server/integrations/adapters";
-
-export const mixedbreadSearchAdapter: ProviderAdapter<ResolvedMixedbreadIntegration, SearchInput, SearchData> = {
-  provider: "mixedbread",
-  tool: "mixedbread_search",
-  async run(resolved, input, context) {
-    // Use resolved.apiKey and resolved.config.store_identifiers internally only.
-    // Return source metadata and chunks that are safe for an MCP client to read.
-    return {
-      status: "ok",
-      provider: context.provider,
-      tool: context.tool,
-      scope: context.scope,
-      integration: context.integration,
-      data: { chunks: [] },
-    };
+{
+  "status": "ok",
+  "provider": "mixedbread",
+  "tool": "mixedbread_search",
+  "scope": { "category": "examples", "slug": "example-app" },
+  "integration": {
+    "label": "Example document store",
+    "purpose": "Semantic search over uploaded project artifacts."
   },
-};
+  "data": { "chunks": [] }
+}
 ```
 
-Do not return raw SDK responses directly. Map provider output into a small result shape that is useful to agents and safe to show to the user.
+Provider output is mapped into small result shapes that are useful to agents and safe to show to the user. Raw store ids, index ids, API keys, and full SDK error bodies are not returned to callers.
 
 Provider errors are normalized before they reach MCP clients:
 
@@ -81,7 +74,6 @@ Expected provider error codes are:
 - `not_configured`
 - `missing_credentials`
 - `tool_not_enabled`
-- `adapter_not_implemented`
 - `timeout`
 - `rate_limited`
 - `provider_error`
@@ -92,14 +84,24 @@ Provider calls run through shared timeout and rate-limit guards:
 
 ```env
 MCP_PROVIDER_TIMEOUT_MS=30000
-MIXEDBREAD_TIMEOUT_MS=30000
-TWELVELABS_TIMEOUT_MS=30000
+MIXEDBREAD_TIMEOUT_MS=120000
+MIXEDBREAD_SEARCH_TIMEOUT_MS=120000
+MIXEDBREAD_AGENTIC_SEARCH_TIMEOUT_MS=240000
+MIXEDBREAD_ANSWER_TIMEOUT_MS=240000
+MIXEDBREAD_TOOL_MAX_RETRIES=0
+MIXEDBREAD_SDK_LOG_LEVEL=silent
+TWELVELABS_TIMEOUT_MS=60000
+TWELVELABS_SEARCH_TIMEOUT_MS=60000
+TWELVELABS_ANALYZE_TIMEOUT_MS=120000
+TWELVELABS_TOOL_MAX_RETRIES=0
 
 MCP_PROVIDER_RATE_LIMIT_MAX=30
 MCP_PROVIDER_RATE_LIMIT_WINDOW_MS=60000
 MIXEDBREAD_RATE_LIMIT_MAX=30
 TWELVELABS_RATE_LIMIT_MAX=30
 ```
+
+Tool-specific timeouts default to the provider SDK defaults from the original MCP server: longer waits for Mixedbread answer/agentic retrieval and TwelveLabs analysis, shorter waits for search calls. `MCP_PROVIDER_TIMEOUT_MS` and provider-level timeout env vars still override those defaults when set, bounded by each tool's maximum.
 
 Set `MCP_PROVIDER_RATE_LIMIT_MAX=0` to disable the best-effort in-memory provider limit. On Vercel, these counters are per function instance, so they are a guardrail against accidental loops rather than a billing-grade quota system.
 
