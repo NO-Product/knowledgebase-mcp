@@ -33,6 +33,17 @@ test("agent workflow can list technology docs then fetch an auth topic", async (
   assert.match(result.content[0]?.text ?? "", /Bearer token authentication/);
 });
 
+test("agent workflow can fetch a source overview with available topics", async () => {
+  const get = captureTool((server) => registerGetDocument(server, SURFACES.technology));
+  const result = await get({ source: "sdks/example-sdk" });
+  const text = result.content[0]?.text ?? "";
+
+  assert.equal(result.isError, undefined);
+  assert.match(text, /## Available Topics/);
+  assert.match(text, /`authentication`/);
+  assert.match(text, /`getting-started`/);
+});
+
 test("agent workflow can list projects then fetch one project overview", async () => {
   const list = captureTool((server) => registerListDocuments(server, SURFACES.projects));
   const catalog = JSON.parse((await list({})).content[0]?.text ?? "{}");
