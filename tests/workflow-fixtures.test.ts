@@ -3,7 +3,7 @@ import test from "node:test";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SURFACES } from "../server/mcp/surfaces";
 import { registerGetDocument } from "../server/tools/documents/get-document";
-import { registerListDocuments } from "../server/tools/documents/list-documents";
+import { registerListDocuments, registerListSources } from "../server/tools/documents/list-documents";
 import { registerGetSkill } from "../server/tools/skills/get-skill";
 import { registerListSkills } from "../server/tools/skills/list-skills";
 
@@ -25,12 +25,36 @@ test("agent workflow can list technology docs then fetch an auth topic", async (
   const list = captureTool((server) => registerListDocuments(server, SURFACES.technology));
   const catalog = JSON.parse((await list({ group: "sdks" })).content[0]?.text ?? "{}");
   assert.equal(catalog.sdks[0].path, "technology/sdks/example-sdk");
+  assert.equal(catalog.sdks[0].source, "sdks/example-sdk");
+  assert.equal(catalog.sdks[0].scope, "sdks/example-sdk");
 
   const get = captureTool((server) => registerGetDocument(server, SURFACES.technology));
   const result = await get({ source: "sdks/example-sdk", topic: "authentication" });
 
   assert.equal(result.isError, undefined);
   assert.match(result.content[0]?.text ?? "", /Bearer token authentication/);
+});
+
+test("agent workflow can list sources before scoped search or fetch", async () => {
+  const list = captureTool((server) => registerListSources(server, SURFACES.technology));
+  const catalog = JSON.parse((await list({ group: "sdks" })).content[0]?.text ?? "{}");
+
+  assert.equal(catalog.meta.surface, "technology");
+  assert.equal(catalog.meta.count, 1);
+  assert.equal(catalog.groups[0].id, "sdks");
+  assert.deepEqual(catalog.sources[0], {
+    id: "example-sdk",
+    name: "Example Sdk",
+    group: "sdks",
+    group_label: "SDKs",
+    source: "sdks/example-sdk",
+    scope: "sdks/example-sdk",
+    path: "technology/sdks/example-sdk",
+    uri: "knowledge://technology/sdks/example-sdk/overview",
+    description: "Small fixture SDK used to demonstrate content authoring and search.",
+    topics: 2,
+    coverage: "minimal",
+  });
 });
 
 test("agent workflow can fetch a source overview with available topics", async () => {

@@ -203,8 +203,8 @@ export function serverInstructions(surface: SurfaceDefinition): string {
     : "";
   return [
     `${surface.label} content namespace. Content is a static snapshot and may be stale until the owner runs sync and rebuilds.`,
-    "Start with list_documents to discover groups and source paths.",
-    "For broad questions, pass a listed path as search_documents.scope before fetching full documents.",
+    "Start with list_sources to discover groups and exact source/scope values.",
+    "Use get_document with a source for source overviews. Use search_documents only with a discovered scope unless broad cross-source search is explicitly needed.",
     "Call list_skills before get_skill.",
     providerHint,
     writerHint,

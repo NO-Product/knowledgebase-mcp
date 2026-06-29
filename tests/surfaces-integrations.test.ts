@@ -71,7 +71,7 @@ test.afterEach(() => {
 test("example surfaces register the base tool set", () => {
   assert.deepEqual(
     captureTools("technology").filter((name) => !name.includes("mixedbread")),
-    ["get_document", "get_skill", "list_documents", "list_skills", "search_documents"],
+    ["get_document", "get_skill", "list_documents", "list_skills", "list_sources", "search_documents"],
   );
   assert.ok(captureTools("projects").includes("list_integrations"));
 });
@@ -89,6 +89,7 @@ test("tool names, descriptions, titles, and annotations are agent-oriented", () 
 
   assert.equal(technology.list_documents.annotations?.readOnlyHint, true);
   assert.equal(technology.list_documents.annotations?.idempotentHint, true);
+  assert.match(technology.list_sources.description ?? "", /before search_documents/);
   assert.match(technology.get_document.description ?? "", /surface/);
   assert.match(technology.search_documents.description ?? "", /scope/);
   assert.equal(projects.write_content.annotations?.openWorldHint, true);

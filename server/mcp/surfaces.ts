@@ -8,7 +8,7 @@ import { registerIntegrationTools } from "../integrations/tools";
 import { type PassthroughToolId, PassthroughToolIdSchema, registerPassthroughTools } from "../passthrough/tools";
 import { registerResources } from "../resources/content-resources";
 import { registerGetDocument } from "../tools/documents/get-document";
-import { registerListDocuments } from "../tools/documents/list-documents";
+import { registerListDocuments, registerListSources } from "../tools/documents/list-documents";
 import { registerSearchDocuments } from "../tools/documents/search-documents";
 import { registerGetSkill } from "../tools/skills/get-skill";
 import { registerListSkills } from "../tools/skills/list-skills";
@@ -181,6 +181,7 @@ export function resolveSurfaceGroup(surface: SurfaceDefinition, value: string): 
 
 export function registerSurfaceTools(server: McpServer, surface: SurfaceDefinition) {
   registerResources(server, surface);
+  registerListSources(server, surface);
   registerListDocuments(server, surface);
   registerGetDocument(server, surface);
   registerSearchDocuments(server, surface);

@@ -129,4 +129,4 @@ MCP_WRITER_CONTEXT="Write in a clear, practical, grounded style."
 
 `MCP_ENABLE_WRITER=true` is retained as a legacy alias for `MCP_ENABLE_WRITE_CONTENT=true`. Prefer `MCP_ENABLE_WRITE_CONTENT` for new deployments.
 
-`write_content` is a convenience generation tool, not a retrieval tool. Agents should gather facts with `list_documents`, `get_document`, `search_documents`, resources, or provider integrations first, then pass source material into `context`.
+`write_content` is a convenience generation tool, not a retrieval tool. Agents should gather facts with `list_sources`, `get_document`, scoped `search_documents`, resources, or provider integrations first, then pass source material into `context`.

@@ -45,7 +45,7 @@ test("initialize response exposes metadata, instructions, and only supported bas
   const payload = await response.json();
   assert.equal(payload.result.serverInfo.name, "open-template-technology");
   assert.equal(payload.result.serverInfo.title, "Open Template - Technology Documentation");
-  assert.match(payload.result.instructions, /list_documents/);
+  assert.match(payload.result.instructions, /list_sources/);
   assert.equal(payload.result.capabilities.logging, undefined);
   assert.equal(payload.result.capabilities.prompts, undefined);
 });

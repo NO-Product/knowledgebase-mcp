@@ -180,6 +180,7 @@ It is based on the synced Model Context Protocol documentation now available in 
   - when `isError` appears.
 - [x] Add `response_format` or similarly named options only where users genuinely need concise vs detailed results.
 - [x] Add pagination/cursor support where lists can grow beyond practical context size: Decision: defer pagination until real downstream catalogs exceed the current conservative template scale.
+  - `list_sources`;
   - `list_documents`;
   - `list_skills`;
   - future `resources/list`;
@@ -196,7 +197,7 @@ It is based on the synced Model Context Protocol documentation now available in 
 
 ## P1 - Resources and Resource Templates
 
-- [x] Decide whether `resources/list` should return a top-level catalog of source overview resources. If yes, make it paginated. Decision: defer until pagination is added; use `list_documents` for catalog discovery.
+- [x] Decide whether `resources/list` should return a top-level catalog of source overview resources. If yes, make it paginated. Decision: defer until pagination is added; use `list_sources` for catalog discovery.
 - [x] Add completion support for resource template variables where the SDK supports it and where content keys can be completed cheaply. Decision: defer with `resources/list` so completion and catalog behavior are designed together.
 - [x] Ensure resource template descriptions explain the surface boundary and examples:
   - `knowledge://technology/sdks/example-sdk/overview`;
@@ -211,7 +212,7 @@ It is based on the synced Model Context Protocol documentation now available in 
 
 - [x] Add concise server instructions through `ServerOptions.instructions`.
 - [x] Make instructions explain cross-tool workflow, not repeat tool descriptions:
-  - call `list_documents` first when source names are unknown;
+  - call `list_sources` first when source names are unknown;
   - use returned source paths as `search_documents.scope` before fetching full docs for broad questions;
   - use `list_skills` before `get_skill`;
   - provider tools require `list_integrations` first;

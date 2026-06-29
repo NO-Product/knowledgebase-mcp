@@ -289,6 +289,10 @@ function countKnownResultItems(value: unknown): number | undefined {
     return asRecord(record.meta)?.count as number;
   }
 
+  if (Array.isArray(record.sources)) {
+    return record.sources.length;
+  }
+
   let count = 0;
   let found = false;
   for (const [key, entry] of Object.entries(record)) {

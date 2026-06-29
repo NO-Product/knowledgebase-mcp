@@ -72,8 +72,8 @@ function resolveTopic(basePath: string, topic?: string, docsDirName?: string): s
 export function registerGetDocument(server: McpServer, surface: SurfaceDefinition) {
   const sourceDescription =
     surface.documentModel === "categorized-docs"
-      ? "Source path from list_documents, such as <group>/<slug>."
-      : "Source slug from list_documents, or <group>/<slug> path.";
+      ? "Source path from list_sources, such as <group>/<slug>."
+      : "Source slug from list_sources, or <group>/<slug> path.";
 
   server.registerTool(
     "get_document",
@@ -92,7 +92,7 @@ export function registerGetDocument(server: McpServer, surface: SurfaceDefinitio
           ? resolveCategorizedSource(surface, source)
           : findCollectionSource(surface, source);
       if (!basePath) {
-        return toolError(`Source not found: ${source}. Call list_documents first.`);
+        return toolError(`Source not found: ${source}. Call list_sources first.`);
       }
 
       const docsDir =

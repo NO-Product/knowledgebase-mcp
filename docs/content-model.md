@@ -72,7 +72,7 @@ content/portfolio/
   clients/<slug>/
 ```
 
-Both models use the same tools: `list_documents`, `get_document`, `search_documents`, `list_skills`, and `get_skill`.
+Both models use the same tools: `list_sources`, `list_documents`, `get_document`, `search_documents`, `list_skills`, and `get_skill`.
 
 ## Source Metadata
 

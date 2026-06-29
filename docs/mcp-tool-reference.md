@@ -6,9 +6,9 @@ This template exposes small, stable, snake_case tools. Tool descriptions are wri
 
 For document lookup:
 
-1. Call `list_documents` first when you do not know the exact source path or source slug.
-2. Use the returned group/source path as `search_documents.scope` for broad questions or when the relevant topic is unclear.
-3. Call `get_document` after selecting a source and, optionally, a topic from the overview table of contents.
+1. Call `list_sources` first when you do not know the exact source path, source slug, or search scope.
+2. Use the returned `source` value with `get_document.source` to inspect an overview and topic table of contents.
+3. Use the returned `scope` value with `search_documents.scope` for targeted lookup inside a source. Use unscoped search only for deliberate cross-source discovery.
 
 For skills:
 
@@ -30,9 +30,17 @@ For passthrough tools:
 
 ## Document Tools
 
+### `list_sources`
+
+Returns a compact source/scope catalog. This is the intended first call for document lookup.
+
+For `categorized-docs` surfaces, responses include a `groups` array and a flat `sources` array. Each row includes `group`, `source`, `scope`, full `path`, overview `uri`, description, topic count, and coverage. Use `source` directly as `get_document.source`; use `scope` directly as `search_documents.scope`.
+
+For `collection-docs` surfaces, responses contain a `sources` array with `source`, `scope`, path, summary, status, years, topic count, and overview URI.
+
 ### `list_documents`
 
-Returns source catalog rows.
+Compatibility source catalog. Prefer `list_sources` for new agent workflows because it exposes exact `source` and `scope` fields without requiring path rewriting.
 
 For `categorized-docs` surfaces, responses are grouped by surface group, such as `sdks`, `platforms`, `tooling`, and `devices` in the starter `technology` surface.
 
@@ -64,7 +72,7 @@ If `topic` is omitted, the result includes the overview and available topics. Mi
 
 Searches the static MiniSearch index.
 
-Use `scope` after discovering sources with `list_documents`; unscoped search scans the whole surface and is less precise on large corpora.
+Use `scope` after discovering sources with `list_sources`; unscoped search scans the whole surface and is less precise on large corpora.
 
 Categorized scope examples: `sdks`, `sdks/example-sdk`, `platforms/example-platform`.
 
