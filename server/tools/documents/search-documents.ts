@@ -26,7 +26,7 @@ export function registerSearchDocuments(server: McpServer, surface: SurfaceDefin
     "search_documents",
     {
       title: "Search documents",
-      description: `Search the ${surface.label} surface when the exact source or topic is unknown. Narrow scope with a group, source path, or source slug. Results include URI, title, heading context, summary, and snippet.`,
+      description: `Search the ${surface.label} surface when the exact topic is unknown. For large corpora, call list_documents first and pass a returned group, source path, or source slug as scope, such as "sdks", "platforms/example-platform", or "example-platform". Results include URI, title, heading context, summary, and snippet.`,
       annotations: STATIC_READ_TOOL,
       inputSchema: {
         query: z.string().min(1),

@@ -107,8 +107,8 @@ export function registerListDocuments(server: McpServer, surface: SurfaceDefinit
       title: "List documents",
       description:
         surface.documentModel === "categorized-docs"
-          ? `Call this first when you do not know the exact source path in the ${surface.label} surface. Returns grouped sources with path, description, topic count, and coverage.`
-          : `Call this first when you need to discover available sources in the ${surface.label} surface. Returns source slugs, group, summary, status, years, topic count, and overview URI.`,
+          ? `Call this first in the ${surface.label} surface to discover groups and source paths. Use returned paths as get_document.source values and as search_documents.scope values for faster, more relevant searches.`
+          : `Call this first in the ${surface.label} surface to discover source slugs and paths. Use returned slugs or paths as get_document.source values and search_documents.scope values for faster, more relevant searches.`,
       annotations: STATIC_READ_TOOL,
       inputSchema: schema,
     },

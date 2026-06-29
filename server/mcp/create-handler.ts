@@ -186,8 +186,8 @@ export function serverInstructions(surface: SurfaceDefinition): string {
     : "";
   return [
     `${surface.label} content namespace. Content is a static snapshot and may be stale until the owner runs sync and rebuilds.`,
-    "When source names are unknown, call list_documents before get_document.",
-    "For broad questions, call search_documents before fetching full documents.",
+    "Start with list_documents to discover groups and source paths.",
+    "For broad questions, pass a listed path as search_documents.scope before fetching full documents.",
     "Call list_skills before get_skill.",
     providerHint,
     writerHint,

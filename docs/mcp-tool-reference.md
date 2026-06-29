@@ -6,8 +6,8 @@ This template exposes small, stable, snake_case tools. Tool descriptions are wri
 
 For document lookup:
 
-1. Call `list_documents` when you do not know the exact source path or source slug.
-2. Call `search_documents` for broad questions or when the relevant topic is unclear.
+1. Call `list_documents` first when you do not know the exact source path or source slug.
+2. Use the returned group/source path as `search_documents.scope` for broad questions or when the relevant topic is unclear.
 3. Call `get_document` after selecting a source and, optionally, a topic from the overview table of contents.
 
 For skills:
@@ -36,6 +36,8 @@ Returns source catalog rows.
 
 For `categorized-docs` surfaces, responses are grouped by surface group, such as `sdks`, `platforms`, `tooling`, and `devices` in the starter `technology` surface.
 
+Each categorized row includes a `path` such as `technology/sdks/example-sdk`. Use the path without the surface prefix, for example `sdks/example-sdk`, as `get_document.source` and `search_documents.scope`.
+
 For `collection-docs` surfaces, responses contain a `sources` array with slug, group, summary, status, years, topic count, and overview URI.
 
 ### `get_document`
@@ -61,6 +63,8 @@ If `topic` is omitted, the result includes the overview and available topics. Mi
 ### `search_documents`
 
 Searches the static MiniSearch index.
+
+Use `scope` after discovering sources with `list_documents`; unscoped search scans the whole surface and is less precise on large corpora.
 
 Categorized scope examples: `sdks`, `sdks/example-sdk`, `platforms/example-platform`.
 

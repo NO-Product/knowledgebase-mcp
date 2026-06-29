@@ -211,8 +211,8 @@ It is based on the synced Model Context Protocol documentation now available in 
 
 - [x] Add concise server instructions through `ServerOptions.instructions`.
 - [x] Make instructions explain cross-tool workflow, not repeat tool descriptions:
-  - call `list_documents` before `get_document` when source names are unknown;
-  - use `search_documents` before fetching full docs for broad questions;
+  - call `list_documents` first when source names are unknown;
+  - use returned source paths as `search_documents.scope` before fetching full docs for broad questions;
   - use `list_skills` before `get_skill`;
   - provider tools require `list_integrations` first;
   - content is static and may not reflect live upstream changes until sync/build runs.
