@@ -17,6 +17,8 @@ sync:
   pattern: url-fetch
 ```
 
+Known free patterns include `url-fetch`, `git-shallow`, `sitemap-fetch`, `crawl-fetch`, and `fixture`. `crawl-fetch` is for bounded same-prefix link harvesting when a static documentation site has no sitemap; keep it constrained by URL prefix, visited set, and page cap.
+
 Commands:
 
 ```bash

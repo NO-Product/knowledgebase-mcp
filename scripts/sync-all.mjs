@@ -7,7 +7,7 @@ import yaml from "js-yaml";
 
 const ROOT = process.cwd();
 const CONTENT_DIR = path.join(ROOT, "content");
-const FREE_PATTERNS = new Set(["url-fetch", "git-shallow", "sitemap-fetch", "fixture"]);
+const FREE_PATTERNS = new Set(["url-fetch", "git-shallow", "sitemap-fetch", "crawl-fetch", "fixture"]);
 const PAID_PATTERNS = new Set(["brightdata-fetch"]);
 const ALLOWED_CONTENT_EXTENSIONS = new Set([".md", ".mdx", ".yaml", ".yml", ".json", ".ts"]);
 

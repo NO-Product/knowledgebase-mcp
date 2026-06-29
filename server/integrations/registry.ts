@@ -1,4 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
+import yaml from "js-yaml";
 import { getMetadataEntries, loadYaml } from "../content/loader";
+import { contentPath } from "../content/paths";
 import { IntegrationsSchema, type IntegrationTool, type MetaYaml } from "../content/schemas";
 import { resolveSurfaceGroup, type SurfaceDefinition } from "../mcp/surfaces";
 import { ProviderToolError } from "./errors";
@@ -21,14 +25,35 @@ function providerConfigured(summary: { api_key_env: string }) {
 
 export function getConfiguredProviders(surface: SurfaceDefinition): Set<IntegrationProvider> {
   const providers = new Set<IntegrationProvider>();
-  for (const entry of getMetadataEntries()) {
-    if (!entry.relativePath.endsWith("_meta.yaml")) continue;
-    if (!entry.key.startsWith(`${surface.id}/`)) continue;
-    const parsed = IntegrationsSchema.safeParse(entry.metadata.integrations ?? {});
-    if (!parsed.success) continue;
-    if (parsed.data.mixedbread) providers.add("mixedbread");
-    if (parsed.data.twelvelabs) providers.add("twelvelabs");
+  const root = contentPath(surface.id);
+  const stack = [root];
+
+  while (stack.length > 0) {
+    const dir = stack.pop();
+    if (!dir || !fs.existsSync(dir)) continue;
+
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "docs") {
+        stack.push(fullPath);
+        continue;
+      }
+      if (!entry.isFile() || entry.name !== "_meta.yaml") continue;
+
+      let meta: unknown;
+      try {
+        meta = yaml.load(fs.readFileSync(fullPath, "utf-8")) ?? {};
+      } catch {
+        continue;
+      }
+
+      const parsed = IntegrationsSchema.safeParse((meta as MetaYaml).integrations ?? {});
+      if (!parsed.success) continue;
+      if (parsed.data.mixedbread) providers.add("mixedbread");
+      if (parsed.data.twelvelabs) providers.add("twelvelabs");
+    }
   }
+
   return providers;
 }
 
