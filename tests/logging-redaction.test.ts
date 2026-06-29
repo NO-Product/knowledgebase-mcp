@@ -53,6 +53,8 @@ test("logger keeps pino defaults and redacts structured output", () => {
 
   assert.equal(output.level, 30);
   assert.equal(typeof output.time, "number");
+  assert.equal(output.message, "adapter failed with Bearer [redacted]");
+  assert.equal(output.msg, undefined);
   assert.deepEqual(output.headers, { authorization: "[Redacted]" });
   assert.doesNotMatch(JSON.stringify(output), /secret-token|super-secret|tl_secret_123456789|other-token/);
 });
@@ -61,6 +63,7 @@ test("logger options keep stdio-compatible destination separate from protocol lo
   const options = loggerOptions();
   const redact = options.redact;
   assert.equal(options.level, process.env.LOG_LEVEL ?? "info");
+  assert.equal(options.messageKey, "message");
   assert.deepEqual(
     redact && !Array.isArray(redact) && typeof redact === "object" ? redact.censor : undefined,
     "[Redacted]",

@@ -20,7 +20,7 @@ Operational logs use Pino's normal structured JSON shape with numeric `level`, e
   "service": "knowledgebase-mcp",
   "environment": "development",
   "runtime": "nodejs",
-  "msg": "MCP request completed"
+  "message": "MCP tools/call search_documents completed: 8 results (200, 44ms)"
 }
 ```
 
@@ -28,7 +28,11 @@ For remote HTTP deployments, logs go to the platform runtime logs. For local std
 
 Every HTTP MCP response includes `x-correlation-id`. If the client sends that header, the server preserves it; otherwise it generates a UUID. Use that id to join client-visible errors with Vercel function logs.
 
-Request logs include surface, transport, HTTP method, status, status class, latency, and correlation id. High-frequency success logs are intentionally concise and controlled by `LOG_LEVEL`. Keep routine success logs at `info`, use `warn` or `error` for failures, and use `debug` only during local troubleshooting.
+Pino is configured with `messageKey: "message"` so platform log viewers such as Vercel render a useful event label instead of treating the whole JSON object as the message. Vercel free-text log search is limited to the message and request path fields, so keep the message short, specific, and searchable.
+
+HTTP MCP requests emit a compact request event and a compact completion event. Request logs include surface, transport, HTTP method, correlation id, JSON-RPC method, tool name, argument keys, safe routing fields such as `scope`, safe query preview/length, and lengths for prompt-like fields. Completion logs include status, status class, latency, response bytes, tool/result counts where they can be inferred, and JSON-RPC error details when present. These summaries are designed to make Vercel's per-request event timeline readable without logging raw prompts, full documents, provider response bodies, or large tool outputs.
+
+High-frequency success logs are intentionally concise and controlled by `LOG_LEVEL`. Keep routine success logs at `info`, use `warn` or `error` for failures, and use `debug` only during local troubleshooting.
 
 OpenTelemetry is intentionally not bundled. Add it only as an optional downstream integration if structured Pino logs and Vercel runtime logs are not enough.
 

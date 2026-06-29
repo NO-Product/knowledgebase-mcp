@@ -5,6 +5,7 @@ import { getConfiguredProviders } from "../integrations/registry";
 import { logger } from "../logger";
 import { hasPassthroughTool } from "../passthrough/tools";
 import { authenticateRequest } from "./auth";
+import { completionMessage, requestMessage, summarizeRequest, summarizeResponse } from "./logging-summary";
 import { getServerMetadata } from "./metadata";
 import { protocolCapabilities, registerProtocolLifecycleLogging } from "./protocol-logging";
 import { defaultSurface, getSurface, isSurfaceEnabled, registerSurfaceTools, type SurfaceDefinition } from "./surfaces";
@@ -117,6 +118,18 @@ export async function handleMcpRequest(req: Request, surfaceParam?: string): Pro
   }
 
   try {
+    const requestSummary = await summarizeRequest(req);
+    logger.info(
+      {
+        correlationId,
+        surface: surface.id,
+        transport: "streamable_http",
+        httpMethod: req.method,
+        ...requestSummary,
+      },
+      requestMessage(requestSummary),
+    );
+
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
@@ -131,6 +144,8 @@ export async function handleMcpRequest(req: Request, surfaceParam?: string): Pro
     await server.connect(transport);
 
     const response = await transport.handleRequest(req);
+    const latencyMs = Date.now() - started;
+    const responseSummary = await summarizeResponse(response);
     logger.info(
       {
         correlationId,
@@ -139,9 +154,11 @@ export async function handleMcpRequest(req: Request, surfaceParam?: string): Pro
         httpMethod: req.method,
         status: response.status,
         statusClass: `${Math.floor(response.status / 100)}xx`,
-        latencyMs: Date.now() - started,
+        latencyMs,
+        ...requestSummary,
+        ...responseSummary,
       },
-      "MCP request completed",
+      completionMessage(requestSummary, responseSummary, response.status, latencyMs),
     );
     return withCorrelationId(response, correlationId);
   } catch (err) {

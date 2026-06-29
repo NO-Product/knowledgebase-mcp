@@ -20,6 +20,7 @@ export function loggerOptions(): LoggerOptions {
       runtime: process.env.NEXT_RUNTIME ?? "nodejs",
     },
     level: process.env.LOG_LEVEL ?? "info",
+    messageKey: "message",
     serializers: {
       err: (value: unknown) => (value instanceof Error ? serializeError(value) : sanitizeForLog(value)),
       error: (value: unknown) => (value instanceof Error ? serializeError(value) : sanitizeForLog(value)),
