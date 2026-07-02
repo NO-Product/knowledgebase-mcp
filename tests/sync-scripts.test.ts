@@ -20,7 +20,18 @@ test("sync output validation is scoped to selected sync roots", () => {
   const repoRoot = process.cwd();
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sync-scope-"));
   const contentRoot = path.join(tmpRoot, "content");
-  fs.cpSync(path.join(repoRoot, "content"), contentRoot, { recursive: true });
+  const syncRoot = path.join(contentRoot, "technology", "sdks", "example-sdk");
+  fs.mkdirSync(syncRoot, { recursive: true });
+  fs.writeFileSync(
+    path.join(syncRoot, "_meta.yaml"),
+    'description: "Temporary fixture sync."\nsync:\n  pattern: "fixture"\n',
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(syncRoot, "sync.ts"),
+    'import fs from "node:fs";\nimport path from "node:path";\nfs.writeFileSync(path.join(import.meta.dirname, "output.md"), "# Synced\\n", "utf-8");\n',
+    "utf-8",
+  );
 
   const unrelatedAsset = path.join(contentRoot, "projects", "examples", "example-app", "assets", ".gitignore");
   fs.mkdirSync(path.dirname(unrelatedAsset), { recursive: true });
