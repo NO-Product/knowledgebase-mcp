@@ -37,7 +37,7 @@ function cost(pattern) {
   return "unknown";
 }
 
-function validateContentOutput() {
+function validateContentOutput(syncRoots) {
   const files = [];
   function collect(dir) {
     if (!fs.existsSync(dir)) return;
@@ -50,7 +50,9 @@ function validateContentOutput() {
       if (entry.isFile()) files.push(fullPath);
     }
   }
-  collect(CONTENT_DIR);
+  for (const syncRoot of syncRoots) {
+    collect(syncRoot);
+  }
   for (const file of files) {
     if (!ALLOWED_CONTENT_EXTENSIONS.has(path.extname(file))) {
       throw new Error(`Unsupported content file extension after sync: ${path.relative(ROOT, file)}`);
@@ -98,7 +100,7 @@ for (const script of selected) {
   }
 }
 try {
-  validateContentOutput();
+  validateContentOutput(selected.map((script) => path.dirname(script.path)));
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   failures++;
